@@ -154,8 +154,30 @@ public class QueryBuilder {
      * TODO: Доработать метод Delete в рамках выполнения домашней работы
      * @return
      */
-    public String buildDeleteQuery(){
-        return "";
+    public String buildDeleteQuery(Class<?> clazz, UUID primaryKey){
+        String tableName;
+        if (!clazz.isAnnotationPresent(Table.class)) {
+            return "Отсутствует таблица";
+        }
+
+        Table tableAnnotation = clazz.getAnnotation(Table.class);
+        tableName = tableAnnotation.name();
+
+        String column = "";
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(Column.class)) {
+                Column columnAnnotation = field.getAnnotation(Column.class);
+                if (columnAnnotation.primaryKey()) {
+                    column = columnAnnotation.name();
+                    break;
+                }
+            }
+        }
+        if (column.isEmpty()) {
+            return "Отсутствует столбец ключа";
+        }
+        return "DELETE FROM " + tableName + " WHERE " + column + " = '" + primaryKey + "';";
     }
 
 
